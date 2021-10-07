@@ -1,7 +1,17 @@
-# This file should contain all the record creation needed to seed the database with its default values.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Examples:
-#
-#   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
-#   Character.create(name: 'Luke', movie: movies.first)
+# frozen_string_literal: true
+
+require "open-uri"
+
+url = "https://en.wikipedia.org/wiki/Medical_procedure"
+procedures = Nokogiri::HTML.parse(Kernel.open(url))
+  .css("#mw-content-text")
+  .css(".mw-parser-output")
+  .xpath("//ul").xpath("//li")
+  .xpath('//a[starts-with(@href, "/wiki")]')
+  .map(&:text)
+
+Procedure.destroy_all if procedures.present?
+
+procedures.each do |name|
+  Procedure.create(name: name)
+end
